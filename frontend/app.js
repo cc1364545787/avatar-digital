@@ -1,9 +1,10 @@
 /**
- * 数字人演示平台 — 前端逻辑
- *
- * 架构：
- *   用户交互 → optimizeScript() → POST /api/generate-script → 显示优化脚本
- *   用户点击生成 → generateVideo() → POST /api/create-video → 轮询 /api/video-status/:id
+ * 数字人演示平台 — 前端逻辑（优化版）
+ * 
+ * 功能：
+ * - 科技大气的 UI 交互
+ * - 真实 AI 脚本优化（调用 Claude API）
+ * - 优先使用男声（匹配男性数字人形象）
  */
 
 // ── 配置 ───────────────────────────────────────────────────────────────────
@@ -11,28 +12,35 @@ const CONFIG = {
   API_BASE: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000'
     : '',
-  MAX_POLL_COUNT: 60,      // 最多轮询 60 次（约 5 分钟）
-  POLL_INTERVAL: 5000,     // 轮询间隔 5 秒
-  TYPEWRITER_SPEED: 18,    // 逐字打印速度
+  MAX_POLL_COUNT: 60,
+  POLL_INTERVAL: 5000,
+  TYPEWRITER_SPEED: 18,
+};
+
+// 声音配置（优先匹配演示视频的男性形象）
+const VOICE_PRIORITY = {
+  default: '沉稳男声',  // 默认使用男声
+  male: ['沉稳男声', '专业男声'],
+  female: ['温柔女声', '亲切女声', '文艺女声']
 };
 
 // Avatar 名称映射
 const AVATAR_NAMES = {
-  'female-warm':      '小智 · 教育讲师',
-  'male-calm':        '小军 · 培训讲师',
-  'female-friendly':  '小慧 · 智能客服',
-  'female-elegant':   '小雅 · 文旅讲解',
-  'male-pro':         '小政 · 政策顾问',
+  'female-warm': '小智 · 教育讲师',
+  'male-calm': '小军 · 培训讲师',
+  'female-friendly': '小慧 · 智能客服',
+  'female-elegant': '小雅 · 文旅讲解',
+  'male-pro': '小政 · 政策顾问',
 };
 
 // ── 全局状态 ───────────────────────────────────────────────────────────────
 const state = {
-  currentScene:   'edu',
-  currentScript:  '',
+  currentScene: 'edu',
+  currentScript: '',
   currentVideoId: null,
-  pollTimer:      null,
-  stepTimer:      null,
-  pollCount:      0,
+  pollTimer: null,
+  stepTimer: null,
+  pollCount: 0,
 };
 
 // DOM 元素缓存
@@ -43,7 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
   cacheElements();
   initSceneCards();
   initTextarea();
+  initAvatarSelect();
+  initVoiceSelect();
+  initBackgroundSelect();
   checkApiStatus();
+
+  // 默认选择男性声音（匹配演示视频）
+  const voiceSelect = elements['voice-select'];
+  if (voiceSelect && voiceSelect.value !== '沉稳男声') {
+    voiceSelect.value = '沉稳男声';
+  }
+  updateAvatarPreview(elements['avatar-select']?.value || 'male-calm');
 
   // 填入默认场景文案
   const defaultCard = document.querySelector('.scene-card.active');
@@ -53,11 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // 缓存 DOM 元素
 function cacheElements() {
   const ids = [
-    'script-input', 'avatar-select', 'voice-select', 'char-count',
-    'avatar-label', 'api-status-dot', 'api-status-text', 'btn-optimize',
-    'btn-generate', 'step3', 'script-preview', 'result-sub',
-    'progress-fill', 'progress-section', 'video-section', 'error-section',
-    'error-msg', 'result-video', 'video-source', 'download-btn', 'speaking-bar'
+    'script-input', 'avatar-select', 'voice-select', 'bg-select',
+    'char-count', 'avatar-label', 'api-status-dot', 'api-status-text',
+    'btn-optimize', 'btn-generate', 'step3', 'script-preview',
+    'result-sub', 'progress-fill', 'progress-section', 'video-section',
+    'error-section', 'error-msg', 'result-video', 'video-source',
+    'download-btn', 'speaking-bar', 'avatar-screen'
   ];
   ids.forEach(id => { elements[id] = document.getElementById(id); });
 }
@@ -74,9 +93,9 @@ function initSceneCards() {
 }
 
 function loadScene(card) {
-  const text   = card.dataset.text   || '';
-  const avatar = card.dataset.avatar || 'female-warm';
-  const voice  = card.dataset.voice  || '温柔女声';
+  const text = card.dataset.text || '';
+  const avatar = card.dataset.avatar || 'male-calm';
+  const voice = card.dataset.voice || '沉稳男声';
 
   if (elements['script-input']) elements['script-input'].value = text;
   if (elements['avatar-select']) elements['avatar-select'].value = avatar;
@@ -84,8 +103,9 @@ function loadScene(card) {
 
   updateCharCount();
   updateAvatarPreview(avatar);
+  updateSpeakingAnimation(avatar);
   state.currentScript = text;
-  state.currentScene  = card.dataset.scene || 'custom';
+  state.currentScene = card.dataset.scene || 'custom';
 }
 
 // ── 文本区 ─────────────────────────────────────────────────────────────────
@@ -103,17 +123,52 @@ function updateCharCount() {
   elements['char-count'].textContent = `${val.length} 字`;
 }
 
-// ── Avatar 预览更新 ────────────────────────────────────────────────────────
+// ── Avatar 选择 ────────────────────────────────────────────────────────────
+function initAvatarSelect() {
+  if (!elements['avatar-select']) return;
+  elements['avatar-select'].addEventListener('change', function() {
+    updateAvatarPreview(this.value);
+    updateSpeakingAnimation(this.value);
+    // 根据形象自动推荐声音
+    const isMale = this.value === 'male-calm' || this.value === 'male-pro';
+    if (elements['voice-select']) {
+      elements['voice-select'].value = isMale ? '沉稳男声' : '温柔女声';
+    }
+  });
+}
+
+function initVoiceSelect() {
+  if (!elements['voice-select']) return;
+  elements['voice-select'].addEventListener('change', function() {
+    // 可以添加声音预览功能
+    console.log('声音已切换为:', this.value);
+  });
+}
+
+function initBackgroundSelect() {
+  if (!elements['bg-select']) return;
+  elements['bg-select'].addEventListener('change', function() {
+    if (elements['avatar-screen']) {
+      elements['avatar-screen'].style.background = `linear-gradient(135deg, ${this.value}20, rgba(0, 102, 255, 0.02))`;
+    }
+  });
+}
+
 function updateAvatarPreview(avatarKey) {
   if (elements['avatar-label']) {
-    elements['avatar-label'].textContent = AVATAR_NAMES[avatarKey] || '小智 · AI讲师';
+    elements['avatar-label'].textContent = AVATAR_NAMES[avatarKey] || '小军 · 培训讲师';
   }
 }
 
-if (elements['avatar-select']) {
-  elements['avatar-select'].addEventListener('change', function() {
-    updateAvatarPreview(this.value);
-  });
+function updateSpeakingAnimation(avatarKey) {
+  const isMale = avatarKey === 'male-calm' || avatarKey === 'male-pro';
+  const circle = document.querySelector('.avatar-circle');
+  if (circle) {
+    const gradient = isMale 
+      ? 'linear-gradient(135deg, #00d4ff, #0066ff)'
+      : 'linear-gradient(135deg, #ff6b9d, #ff2d75)';
+    circle.style.background = gradient;
+  }
 }
 
 // ── API 状态检测 ───────────────────────────────────────────────────────────
@@ -125,7 +180,7 @@ async function checkApiStatus() {
     if (res.ok) {
       elements['api-status-dot'].classList.add('online');
       elements['api-status-dot'].classList.remove('offline');
-      elements['api-status-text'].textContent = '服务在线';
+      elements['api-status-text'].textContent = '服务在线 | API 就绪';
     } else {
       throw new Error('服务异常');
     }
@@ -136,7 +191,7 @@ async function checkApiStatus() {
   }
 }
 
-// ── Step 1：AI 优化脚本 ────────────────────────────────────────────────────
+// ── Step 1：AI 优化脚本（真实调用 API）────────────────────────────────────
 async function optimizeScript() {
   const text = elements['script-input']?.value.trim();
   const voice = elements['voice-select']?.value;
@@ -145,31 +200,37 @@ async function optimizeScript() {
 
   if (!text) { showToast('请先输入文案'); return; }
 
-  setButtonLoading(btn, true, '优化中...');
+  setButtonLoading(btn, true, 'AI 优化中...');
   setSpeaking(true);
 
   try {
-    const res = await fetch(`${CONFIG.API_BASE}/api/generate-script`, {
+    const response = await fetch(`${CONFIG.API_BASE}/api/generate-script`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, voice, style, platform: 'HeyGen' }),
     });
 
-    const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.error || '优化失败');
+    const data = await response.json();
 
-    // 逐字打印效果
-    if (elements['script-input']) {
-      elements['script-input'].value = '';
-      await typeWriter(elements['script-input'], data.script);
+    if (!response.ok || (data.error && !data.fallback)) {
+      throw new Error(data.error || data.message || '优化失败');
     }
 
-    updateCharCount();
-    state.currentScript = data.script;
+    // 显示优化后的脚本
+    if (elements['script-input']) {
+      elements['script-input'].value = data.script;
+      updateCharCount();
+      state.currentScript = data.script;
+    }
 
-    if (data.warning) showToast(`提示：${data.warning}`, 'error');
-    showToast(`✓ 脚本已优化 · ${data.stats?.chars || data.script.length} 字 · 用时约 ${data.stats?.estimatedSeconds || '?'}ms`);
+    if (data.fallback) {
+      showToast(`⚠️ ${data.warning || '使用本地优化'}`, 'warning');
+    } else {
+      const stats = data.stats || {};
+      showToast(`✓ 脚本优化完成 · ${stats.chars || data.script.length} 字`);
+    }
   } catch (err) {
+    console.error('[optimizeScript] Error:', err);
     showToast('优化失败：' + err.message, 'error');
   } finally {
     setButtonLoading(btn, false, 'AI 优化脚本');
@@ -177,29 +238,12 @@ async function optimizeScript() {
   }
 }
 
-// 逐字打印
-function typeWriter(element, text, speed = CONFIG.TYPEWRITER_SPEED) {
-  return new Promise(resolve => {
-    let i = 0;
-    element.value = '';
-    const interval = setInterval(() => {
-      if (i < text.length) {
-        element.value += text[i++];
-        element.scrollTop = element.scrollHeight;
-      } else {
-        clearInterval(interval);
-        resolve();
-      }
-    }, speed);
-  });
-}
-
 // ── Step 2：生成数字人视频 ─────────────────────────────────────────────────
 async function generateVideo() {
   const script = elements['script-input']?.value.trim();
-  const voice  = elements['voice-select']?.value;
+  const voice = elements['voice-select']?.value;
   const avatar = elements['avatar-select']?.value;
-  const btn    = elements['btn-generate'];
+  const btn = elements['btn-generate'];
 
   if (!script) { showToast('请先输入或生成播报脚本'); return; }
   if (script.length < 10) { showToast('脚本太短，至少需要10个字'); return; }
@@ -213,7 +257,8 @@ async function generateVideo() {
   resetStep3UI();
 
   if (elements['script-preview']) {
-    elements['script-preview'].textContent = `播报内容：${script}`;
+    const previewText = script.length > 200 ? script.substring(0, 200) + '...' : script;
+    elements['script-preview'].textContent = `📝 播报内容：${previewText}`;
   }
 
   setButtonLoading(btn, true, '提交生成任务...');
@@ -232,11 +277,11 @@ async function generateVideo() {
     state.currentVideoId = data.video_id;
     if (elements['result-sub']) {
       elements['result-sub'].textContent = data.demoMode
-        ? '视频生成中，通常需要 1-3 分钟...'
-        : '视频生成中，通常需要 1-3 分钟...';
+        ? '🎬 演示模式：正在生成视频...'
+        : '🎬 视频生成中，通常需要 1-3 分钟...';
     }
 
-    if (data.warning) showToast(`提示：${data.warning}`, 'error');
+    if (data.warning) showToast(`⚠️ ${data.warning}`, 'warning');
 
     startPolling(data.video_id);
   } catch (err) {
@@ -248,13 +293,12 @@ async function generateVideo() {
 
 // ── 轮询视频状态 ───────────────────────────────────────────────────────────
 function startPolling(videoId) {
-  // 清理已有的定时器
   if (state.pollTimer) clearInterval(state.pollTimer);
   if (state.stepTimer) clearInterval(state.stepTimer);
 
   state.pollCount = 0;
 
-  const steps = ['pstep-1', 'pstep-2', 'pstep-3', 'pstep-4'];
+  const steps = ['pstep-1', 'pstep-2', 'pstep-3', 'pstep-4', 'pstep-5'];
   let stepIndex = 1;
 
   function advanceStep() {
@@ -265,8 +309,7 @@ function startPolling(videoId) {
     }
   }
 
-  // 每 8 秒推进一个步骤（视觉效果）
-  state.stepTimer = setInterval(advanceStep, 8000);
+  state.stepTimer = setInterval(advanceStep, 6000);
 
   state.pollTimer = setInterval(async () => {
     state.pollCount++;
@@ -298,7 +341,7 @@ function startPolling(videoId) {
         onVideoReady(data.videoUrl, data.thumbnailUrl);
       } else if (data.status === 'failed') {
         cleanupPolling();
-        showError(data.message || '视频生成失败，请检查 HeyGen API 配额');
+        showError(data.message || '视频生成失败，请检查 API 配额');
       }
     } catch (err) {
       console.error('[poll]', err);
@@ -315,7 +358,6 @@ function cleanupPolling() {
 
 // ── 视频就绪 ───────────────────────────────────────────────────────────────
 function onVideoReady(videoUrl, thumbnailUrl) {
-  // 完成进度
   if (elements['progress-fill']) elements['progress-fill'].style.width = '100%';
   document.querySelectorAll('.pstep-dot').forEach(d => {
     d.classList.remove('active');
@@ -331,7 +373,7 @@ function onVideoReady(videoUrl, thumbnailUrl) {
   if (videoEl && sourceEl) {
     sourceEl.src = videoUrl;
     videoEl.load();
-    videoEl.play().catch(() => {}); // 自动播放（可能被浏览器阻止）
+    videoEl.play().catch(() => console.log('自动播放被浏览器阻止'));
   }
 
   if (elements['download-btn']) {
@@ -384,10 +426,13 @@ function resetStep3UI() {
   });
 }
 
-// ── 分享面板 ──────────────────────────────────────────────────────────────
+// ── 分享功能 ──────────────────────────────────────────────────────────────
 function showSharePanel() {
   const url = elements['video-source']?.src;
-  if (!url) return;
+  if (!url) {
+    showToast('没有可分享的视频', 'error');
+    return;
+  }
   navigator.clipboard.writeText(url)
     .then(() => showToast('视频链接已复制到剪贴板'))
     .catch(() => showToast('请手动复制地址栏链接'));
@@ -401,13 +446,21 @@ function setButtonLoading(btn, isLoading, loadingText = '处理中...', original
     btn.innerHTML = `<span class="btn-icon">⋯</span> ${loadingText}`;
   } else {
     btn.disabled = false;
-    btn.innerHTML = originalHtml || btn.getAttribute('data-original-html') || btn.innerHTML;
+    btn.innerHTML = originalHtml || btn.getAttribute('data-original-html') || 
+      (btn.id === 'btn-optimize' ? '<span class="btn-icon">✦</span> AI 优化脚本' : 
+       '<span class="btn-icon">▶</span> 生成数字人视频');
   }
 }
 
 function setSpeaking(isSpeaking) {
-  if (elements['speaking-bar']) {
-    elements['speaking-bar'].style.display = isSpeaking ? 'flex' : 'none';
+  const bar = elements['speaking-bar'];
+  if (bar) {
+    bar.style.display = isSpeaking ? 'flex' : 'none';
+    if (isSpeaking) {
+      bar.style.animation = 'none';
+      bar.offsetHeight;
+      bar.style.animation = null;
+    }
   }
 }
 
@@ -417,12 +470,19 @@ function showToast(msg, type = 'success') {
     console.log('[toast]', msg);
     return;
   }
+  const colors = {
+    success: '#00d4ff',
+    error: '#ff6666',
+    warning: '#ffaa44'
+  };
+  toast.style.borderColor = colors[type] || colors.success;
+  toast.style.color = colors[type] || colors.success;
   toast.textContent = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// 导出全局函数（供 HTML 调用）
+// 导出全局函数
 window.optimizeScript = optimizeScript;
 window.generateVideo = generateVideo;
 window.resetDemo = resetDemo;
