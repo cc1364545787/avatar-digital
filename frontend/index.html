@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 数字人演示平台</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ═══ 顶部导航 ═══════════════════════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">数字人演示平台</span>
+      <span class="logo-badge">DEMO</span>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot" id="api-status-dot"></span>
+      <span class="status-text" id="api-status-text">检测服务中...</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ 主体 ═══════════════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── 英雄区 ─────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="live-dot"></span>
+      AI 驱动 · 实时生成 · 课堂演示专用
+    </div>
+    <h1 class="hero-title">
+      输入文字<br />
+      <em>数字人替你开口</em>
+    </h1>
+    <p class="hero-sub">3 步生成专业数字人视频 — 开场震撼学员，激发学习动力</p>
+  </section>
+
+  <!-- ══ 步骤区 ════════════════════════════════════════════════════════════ -->
+  <div class="workflow">
+
+    <!-- ── Step 1：选场景 ────────────────────────────────────────────────── -->
+    <div class="step-card" id="step1">
+      <div class="step-header">
+        <span class="step-num">01</span>
+        <div>
+          <div class="step-title">选择演示场景</div>
+          <div class="step-sub">点击场景卡片，自动填入示例文案</div>
+        </div>
+      </div>
+
+      <div class="scene-grid" id="scene-grid">
+        <div class="scene-card active" data-scene="edu"
+             data-text="大家好，我是今天的AI助教小智。欢迎来到数字人技术体验课。在接下来的时间里，我将带大家亲身感受AI数字人如何彻底改变教育培训行业。现在，你们看到的这个会说话的我，就是数字人技术的真实呈现——无需摄像机，无需化妆，只需一段文字，几分钟内即可生成。想学会这项技术吗？让我们开始吧！"
+             data-avatar="female-warm" data-voice="温柔女声">
+          <div class="scene-icon">🎓</div>
+          <div class="scene-name">教育培训</div>
+          <div class="scene-desc">课程开场、知识讲解</div>
+        </div>
+
+        <div class="scene-card" data-scene="army"
+             data-text="尊敬的各位战士，欢迎参加本次数字化技能培训。此次培训将在七天内系统讲解人工智能基础应用，帮助大家掌握数字化工作技能，提升信息化综合能力。课程采用实操演示为主，全程无需编程基础，请大家放心学习。训练有素是我们的传统，拥抱科技是时代的要求，让我们共同迎接数字化未来！"
+             data-avatar="male-calm" data-voice="沉稳男声">
+          <div class="scene-icon">🎖️</div>
+          <div class="scene-name">部队培训</div>
+          <div class="scene-desc">正式播报、指令宣贯</div>
+        </div>
+
+        <div class="scene-card" data-scene="cs"
+             data-text="您好，我是智能客服小慧，很高兴为您服务。我们提供全天候七乘二十四小时在线服务，响应时间平均不超过三秒。无论您有任何关于产品咨询、订单查询还是售后问题，我都可以立即为您解答。请问您今天有什么需要帮助的呢？"
+             data-avatar="female-friendly" data-voice="亲切女声">
+          <div class="scene-icon">💬</div>
+          <div class="scene-name">智能客服</div>
+          <div class="scene-desc">电商、政务服务场景</div>
+        </div>
+
+        <div class="scene-card" data-scene="culture"
+             data-text="欢迎来到新疆文化数字展览馆。我是您的数字讲解员小雅。这片神奇的土地，孕育了绵延千年的丝绸之路文明。从楼兰古城的黄沙到天山雪峰的皑皑白雪，从维吾尔族的热情歌舞到哈萨克族的马背文化，每一处都是历史留给我们的珍贵遗产。今天，科技让文化跨越时空，欢迎开启您的数字文化之旅。"
+             data-avatar="female-elegant" data-voice="文艺女声">
+          <div class="scene-icon">🏛️</div>
+          <div class="scene-name">文旅讲解</div>
+          <div class="scene-desc">展馆导览、文化推广</div>
+        </div>
+
+        <div class="scene-card" data-scene="anti-fraud"
+             data-text="亲爱的老人家，请注意，这是一条重要的防诈骗提示。近期，冒充公安、社保、银行人员的电话诈骗案件高发。请记住：任何要求您转账汇款、提供银行卡密码或验证码的电话，都是诈骗！遇到可疑情况，请立刻挂断电话，拨打110或让家人帮助核实。保护好您的钱袋子，才能享受幸福晚年生活！"
+             data-avatar="female-friendly" data-voice="亲切女声">
+          <div class="scene-icon">🛡️</div>
+          <div class="scene-name">养老反诈</div>
+          <div class="scene-desc">防诈宣教、安全提示</div>
+        </div>
+
+        <div class="scene-card" data-scene="talent"
+             data-text="您好，我是香港人才政策咨询助手小政。香港优秀人才入境计划目前已向全球开放，内地居民符合条件可通过积分制申请香港居留权。主要评估维度包括：年龄、学历、工作经验及成就。我将为您逐一解读申请条件，并协助您准备所需的全套申请材料。如有疑问，随时向我提问！"
+             data-avatar="male-pro" data-voice="专业男声">
+          <div class="scene-icon">📋</div>
+          <div class="scene-name">人才政策</div>
+          <div class="scene-desc">政策咨询、资料服务</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 2：配置 & 输入 ──────────────────────────────────────────── -->
+    <div class="step-card" id="step2">
+      <div class="step-header">
+        <span class="step-num">02</span>
+        <div>
+          <div class="step-title">配置数字人 & 输入文案</div>
+          <div class="step-sub">可修改文案或直接使用上方场景模板</div>
+        </div>
+      </div>
+
+      <div class="config-layout">
+        <!-- 左：数字人预览 -->
+        <div class="avatar-preview-box">
+          <div class="avatar-screen" id="avatar-screen">
+            <div class="avatar-idle" id="avatar-idle">
+              <div class="avatar-circle">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <circle cx="24" cy="18" r="10" fill="rgba(255,255,255,0.9)"/>
+                  <ellipse cx="24" cy="42" rx="16" ry="10" fill="rgba(255,255,255,0.7)"/>
+                </svg>
+              </div>
+              <div class="avatar-label" id="avatar-label">小智 · 教育讲师</div>
+            </div>
+            <div class="avatar-speaking-bar" id="speaking-bar" style="display:none">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <div class="avatar-config">
+            <div class="config-item">
+              <label>形象</label>
+              <select id="avatar-select">
+                <option value="female-warm">温柔女性</option>
+                <option value="male-calm">沉稳男性</option>
+                <option value="female-friendly">亲切女性</option>
+                <option value="female-elegant">文艺女性</option>
+                <option value="male-pro">专业男性</option>
+              </select>
+            </div>
+            <div class="config-item">
+              <label>声音</label>
+              <select id="voice-select">
+                <option value="温柔女声">温柔女声</option>
+                <option value="沉稳男声">沉稳男声</option>
+                <option value="亲切女声">亲切女声</option>
+                <option value="文艺女声">文艺女声</option>
+                <option value="专业男声">专业男声</option>
+              </select>
+            </div>
+            <div class="config-item">
+              <label>背景</label>
+              <select id="bg-select">
+                <option value="#f0f4f8">浅蓝灰</option>
+                <option value="#f5f0eb">暖米白</option>
+                <option value="#e8f5e9">清新绿</option>
+                <option value="#1a1a2e">深夜蓝</option>
+              </select>
+            </div>
+            <div class="config-item">
+              <label>部署</label>
+              <select id="deploy-select">
+                <option>云端部署</option>
+                <option>内网离线版</option>
+                <option>微信小程序</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：文案输入 -->
+        <div class="text-input-box">
+          <div class="textarea-header">
+            <span class="textarea-label">播报文案</span>
+            <span class="char-count" id="char-count">0 字</span>
+          </div>
+          <textarea id="script-input"
+            placeholder="在此输入播报文字，或点击上方场景卡片自动填入示例…"
+            rows="8"
+          ></textarea>
+          <div class="ai-optimize-row">
+            <button class="btn-outline" id="btn-optimize" onclick="optimizeScript()">
+              <span class="btn-icon">✦</span> AI 优化脚本
+            </button>
+            <span class="optimize-tip">用 Claude AI 自动优化语气与节奏</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary btn-gen" id="btn-generate" onclick="generateVideo()">
+        <span class="btn-icon">▶</span>
+        生成数字人视频
+      </button>
+    </div>
+
+    <!-- ── Step 3：视频结果 ───────────────────────────────────────────────── -->
+    <div class="step-card" id="step3" style="display:none">
+      <div class="step-header">
+        <span class="step-num">03</span>
+        <div>
+          <div class="step-title">视频生成结果</div>
+          <div class="step-sub" id="result-sub">正在生成中，通常需要 1-3 分钟...</div>
+        </div>
+      </div>
+
+      <!-- 进度区 -->
+      <div class="progress-section" id="progress-section">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-steps">
+          <div class="pstep" id="pstep-1">
+            <div class="pstep-dot active"></div>
+            <div class="pstep-label">脚本提交</div>
+          </div>
+          <div class="pstep" id="pstep-2">
+            <div class="pstep-dot"></div>
+            <div class="pstep-label">人物渲染</div>
+          </div>
+          <div class="pstep" id="pstep-3">
+            <div class="pstep-dot"></div>
+            <div class="pstep-label">语音合成</div>
+          </div>
+          <div class="pstep" id="pstep-4">
+            <div class="pstep-dot"></div>
+            <div class="pstep-label">视频合成</div>
+          </div>
+          <div class="pstep" id="pstep-5">
+            <div class="pstep-dot"></div>
+            <div class="pstep-label">完成</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视频播放区 -->
+      <div class="video-section" id="video-section" style="display:none">
+        <video id="result-video" controls playsinline>
+          <source id="video-source" src="" type="video/mp4" />
+          您的浏览器不支持 video 标签
+        </video>
+        <div class="video-actions">
+          <a id="download-btn" class="btn-outline" href="#" download>
+            ↓ 下载视频
+          </a>
+          <button class="btn-outline" onclick="resetDemo()">
+            ↩ 重新生成
+          </button>
+          <button class="btn-primary" onclick="showSharePanel()">
+            分享此演示
+          </button>
+        </div>
+      </div>
+
+      <!-- 错误区 -->
+      <div class="error-section" id="error-section" style="display:none">
+        <div class="error-icon">⚠</div>
+        <div class="error-msg" id="error-msg">生成失败，请重试</div>
+        <button class="btn-outline" onclick="resetDemo()">返回重试</button>
+      </div>
+
+      <!-- 脚本预览 -->
+      <div class="script-preview" id="script-preview"></div>
+    </div>
+
+  </div><!-- /workflow -->
+
+  <!-- ══ 技术方案说明区 ════════════════════════════════════════════════════ -->
+  <section class="tech-section">
+    <div class="tech-header">技术架构</div>
+    <div class="arch-flow">
+      <div class="arch-node">
+        <div class="arch-icon">📝</div>
+        <div class="arch-name">用户输入</div>
+        <div class="arch-desc">文字/场景模板</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight">
+        <div class="arch-icon">✦</div>
+        <div class="arch-name">Claude AI</div>
+        <div class="arch-desc">脚本优化</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight">
+        <div class="arch-icon">◈</div>
+        <div class="arch-name">HeyGen API</div>
+        <div class="arch-desc">数字人渲染</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-icon">▶</div>
+        <div class="arch-name">视频输出</div>
+        <div class="arch-desc">MP4 / 直播流</div>
+      </div>
+    </div>
+
+    <div class="cost-cards">
+      <div class="cost-card">
+        <div class="cost-num">¥0.01</div>
+        <div class="cost-label">每次脚本生成</div>
+      </div>
+      <div class="cost-card">
+        <div class="cost-num">¥0.5~2</div>
+        <div class="cost-label">每条数字人视频</div>
+      </div>
+      <div class="cost-card">
+        <div class="cost-num">3 min</div>
+        <div class="cost-label">平均生成时间</div>
+      </div>
+      <div class="cost-card">
+        <div class="cost-num">1080p</div>
+        <div class="cost-label">最高输出分辨率</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ Toast 通知 ═════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
