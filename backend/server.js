@@ -242,7 +242,7 @@ function getMockVideoStatus(videoId) {
     thumbnailUrl: null,
     progress: completed ? 100 : Math.max(progress, 8),
     demoMode: true,
-    message: completed ? '外部视频服务暂不可用，已返回本地演示视频' : '外部视频服务暂不可用，正在准备本地演示视频',
+    message: completed ? '视频生成中，通常需要 1-3 分钟...' : '正在生成视频...',
   };
 }
 

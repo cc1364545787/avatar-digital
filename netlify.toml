@@ -1,0 +1,17 @@
+[build]
+  # 前端静态文件目录
+  publish = "frontend"
+  # 函数文件夹路径
+  functions = "netlify/functions"
+
+# 路由规则：前端调用的 /api/* 都指向函数
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# 确保前端路由正常工作
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

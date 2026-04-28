@@ -1,0 +1,23 @@
+{
+  "name": "digital-human-demo",
+  "version": "1.0.0",
+  "description": "> 课堂开场演示工具：输入文字 → AI优化脚本 → 生成真实数字人视频",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cc1364545787/avatar-digital.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cc1364545787/avatar-digital/issues"
+  },
+  "homepage": "https://github.com/cc1364545787/avatar-digital#readme",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
