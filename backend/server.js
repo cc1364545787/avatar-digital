@@ -42,7 +42,7 @@ const CONFIG = {
   HEYGEN_ZH_FEMALE_VOICE_ID: process.env.HEYGEN_ZH_FEMALE_VOICE_ID || '',
   HEYGEN_ZH_MALE_VOICE_ID: process.env.HEYGEN_ZH_MALE_VOICE_ID || '',
   ENABLE_MOCK_FALLBACK: process.env.ENABLE_MOCK_FALLBACK !== 'false',
-  DEMO_VIDEO_URL: process.env.DEMO_VIDEO_URL || 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+  DEMO_VIDEO_URL: process.env.DEMO_VIDEO_URL || '/demo-video.mp4',
   
   // 服务器端口
   PORT: process.env.PORT || 3000,

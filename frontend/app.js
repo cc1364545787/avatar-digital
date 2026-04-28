@@ -232,7 +232,7 @@ async function generateVideo() {
     state.currentVideoId = data.video_id;
     if (elements['result-sub']) {
       elements['result-sub'].textContent = data.demoMode
-        ? '外视频生成中，通常需要 1-3 分钟...'
+        ? '视频生成中，通常需要 1-3 分钟...'
         : '视频生成中，通常需要 1-3 分钟...';
     }
 
