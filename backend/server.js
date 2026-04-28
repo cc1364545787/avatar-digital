@@ -418,7 +418,7 @@ app.post('/api/create-video', async (req, res) => {
     });
   }
 
-  const avatar_id = HEYGEN_AVATARS[avatarKey] || HEYGEN_AVATARS['female-warm'];
+  const avatar_id = HEYGEN_AVATARS[avatarKey] || HEYGEN_AVATARS['male-calm'];
   const voice_id = chooseHeyGenVoiceId({ voiceLabel: voice, script });
 
   if (isChineseText(script) && !voice_id) {

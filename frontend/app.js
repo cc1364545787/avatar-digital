@@ -26,8 +26,8 @@ const VOICE_PRIORITY = {
 
 // Avatar 名称映射
 const AVATAR_NAMES = {
-  'female-warm': '小智 · 教育讲师',
-  'male-calm': '小军 · 培训讲师',
+  'female-warm': '小军 · 培训讲师',
+  'male-calm': '小智 · 教育讲师',
   'female-friendly': '小慧 · 智能客服',
   'female-elegant': '小雅 · 文旅讲解',
   'male-pro': '小政 · 政策顾问',
@@ -156,7 +156,7 @@ function initBackgroundSelect() {
 
 function updateAvatarPreview(avatarKey) {
   if (elements['avatar-label']) {
-    elements['avatar-label'].textContent = AVATAR_NAMES[avatarKey] || '小军 · 培训讲师';
+    elements['avatar-label'].textContent = AVATAR_NAMES[avatarKey] || '小智 · 教育讲师';
   }
 }
 

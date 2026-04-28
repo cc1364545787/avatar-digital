@@ -24,8 +24,8 @@ exports.handler = async (event, context) => {
   
     // 返回可用的 Avatar 列表
     const avatars = [
-      { id: 'female-warm', name: '小智 · 教育讲师', gender: 'female', style: 'warm' },
-      { id: 'male-calm', name: '小军 · 培训讲师', gender: 'male', style: 'calm' },
+      { id: 'female-warm', name: '小军 · 培训讲师', gender: 'female', style: 'warm' },
+      { id: 'male-calm', name: '小智 · 教育讲师', gender: 'male', style: 'calm' },
       { id: 'female-friendly', name: '小慧 · 智能客服', gender: 'female', style: 'friendly' },
       { id: 'female-elegant', name: '小雅 · 文旅讲解', gender: 'female', style: 'elegant' },
       { id: 'male-pro', name: '小政 · 政策顾问', gender: 'male', style: 'professional' }
